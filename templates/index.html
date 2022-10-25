@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" style="background: var(--bs-gray-900);">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Социальная сеть</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.1.3/dist/slate/bootstrap.min.css">
+</head>
+
+<body style="background: var(--bs-gray-900);">
+<div class="container">
+    <div class="row" style="margin-top: 24px;">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Друзья</h5>
+                </div>
+                <div class="card-body">
+                    <div class="vstack gap-1" id="friends">
+                        <button class="btn btn-primary btn-sm" type="button"><span style="color: rgb(208, 208, 208);">[1]</span>
+                            <strong>Абоба</strong>, <span style="color: rgb(198, 208, 199);">локально</span></button>
+                        <button class="btn btn-primary btn-sm" type="button"><span style="color: rgb(208, 208, 208);">[2]</span>
+                            <strong>Биба</strong>, <span style="color: rgb(198, 208, 199);">198.15.02.176</span>
+                        </button>
+                        <p style="margin-bottom: 0px;">Чтобы увидеть друзей, авторизуйтесь в интерактивной консоли</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card" style="min-height: 90vh;">
+                <div class="card-header">
+                    <h5 class="mb-0">Интерактивный чат-консоль</h5>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <div id="console"
+                         class="vstack font-monospace border rounded border-dark d-flex justify-content-end"
+                         style="background: rgba(0,0,0,0.39);padding: 4px;">
+                        <p style="margin-bottom: 0px;"><strong>Добро пожаловать в систему!</strong> Для начала работы
+                            <span style="text-decoration: underline;">авторизуйтесь</span>. Для помощи используйте
+                            команду /help</p>
+                    </div>
+                    <form style="margin-top: 12px;" id="form" method="POST">
+                        <input id="input"
+                               class="border rounded border-dark form-control form-control-sm"
+                               type="text"
+                               style="margin-top: 0px;background: var(--bs-dark);color: var(--bs-white);"
+                               required="" placeholder=">>">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let console = document.getElementById("console");
+    let input = document.getElementById("input");
+
+    function processForm(e) {
+        let input_value = input.value.trim().split(" ");
+        input.value = "";
+        e.preventDefault();
+        let xhr = new XMLHttpRequest();
+        if (input_value[0] === "/ping") {
+            let url = "command";
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    let json = JSON.parse(xhr.responseText);
+                    console.innerHTML = console.innerHTML + "<p style=\"margin-bottom: 0px;\">[system] " + json["msg"] + "</p>";
+                }
+            }
+            let data = JSON.stringify({"command": "ping"});
+            xhr.send(data);
+        }
+        else if(input_value[0] === "/help"){
+            let url = "command";
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    let json = JSON.parse(xhr.responseText);
+                    console.innerHTML = console.innerHTML + "<p style=\"margin-bottom: 0px;\">[system] " + json["msg"] + "</p>";
+                }
+            }
+            let data = JSON.stringify({"command": "help"});
+            xhr.send(data);
+        }
+        else if(input_value[0] === "/register"){
+            if(input_value.length !== 3){
+                console.innerHTML = console.innerHTML + "<p style=\"margin-bottom: 0px;\"><strong>[system]</strong> Неправильное использование команды /register</p>";
+                return;
+            }
+            let url = "command";
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    let json = JSON.parse(xhr.responseText);
+                    console.innerHTML = console.innerHTML + "<p style=\"margin-bottom: 0px;\"><strong>[system]</strong> " + json["msg"] + "</p>";
+                }
+            }
+            let data = JSON.stringify({"command": "register", "name": input_value[1], "password": input_value[2]});
+            xhr.send(data);
+        }
+    }
+
+    const form = document.getElementById("form");
+    form.addEventListener("submit", processForm);
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
