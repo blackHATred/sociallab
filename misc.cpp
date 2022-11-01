@@ -65,3 +65,7 @@ string send_msg_out(string from_name, long int from_id, string to_name, long int
 
     return "Error";
 }
+
+string get_user_name(){
+
+}
