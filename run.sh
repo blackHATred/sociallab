@@ -15,5 +15,6 @@ ln -s /etc/nginx/sites-available/social_server /etc/nginx/sites-enabled/
 sudo systemctl restart nginx
 # Теперь создаём образ докера и привязываем к 9080 порту
 docker build . -t social_server
-docker run -p 9080:9080 -p 6379:6379 -it social_server
+# docker run -p 9080:9080 -p 6379:6379 -it social_server
+docker run --network host social_server
 echo "Контейнер запущен"

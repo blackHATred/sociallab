@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.2)
+set (CMAKE_CXX_STANDARD 11)
 project(social3)
-
-
 add_executable(social3 main.cpp)
+
 find_package(Crow CONFIG REQUIRED)
 target_link_libraries(social3 PRIVATE Crow::Crow)
 find_package(hiredis CONFIG REQUIRED)
@@ -13,9 +13,11 @@ if(TARGET redis++::redis++_static)
 else()
     target_link_libraries(social3 PRIVATE redis++::redis++)
 endif()
-
+find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
+target_include_directories(social3 PRIVATE ${JWT_CPP_INCLUDE_DIRS})
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(social3 PRIVATE nlohmann_json::nlohmann_json)
 file(COPY templates DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY static DESTINATION ${CMAKE_BINARY_DIR})
 
 set(CMAKE_CXX_STANDARD 23)

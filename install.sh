@@ -11,4 +11,8 @@ git clone https://github.com/Microsoft/vcpkg.git
 ./vcpkg/vcpkg install redis-plus-plus
 # shellcheck disable=SC1001
 ./vcpkg/vcpkg install nlohmann-json
+# shellcheck disable=SC1001
+./vcpkg/vcpkg install jwt-cpp
+# shellcheck disable=SC1001
+./vcpkg/vcpkg install mbedtls
 exit 0

@@ -4,3 +4,5 @@ git clone https://github.com/Microsoft/vcpkg.git
 .\vcpkg\vcpkg.exe install hiredis
 .\vcpkg\vcpkg.exe install redis-plus-plus
 .\vcpkg\vcpkg.exe install nlohmann-json
+.\vcpkg\vcpkg.exe install jwt-cpp
+.\vcpkg\vcpkg.exe install mbedtls
