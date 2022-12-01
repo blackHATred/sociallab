@@ -15,4 +15,6 @@ git clone https://github.com/Microsoft/vcpkg.git
 ./vcpkg/vcpkg install jwt-cpp
 # shellcheck disable=SC1001
 ./vcpkg/vcpkg install mbedtls
+# shellcheck disable=SC1001
+./vcpkg/vcpkg install icu
 exit 0

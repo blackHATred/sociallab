@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
-set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD 23)
 project(social3)
 add_executable(social3 main.cpp)
 
@@ -15,8 +15,8 @@ else()
 endif()
 find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
 target_include_directories(social3 PRIVATE ${JWT_CPP_INCLUDE_DIRS})
-find_package(nlohmann_json CONFIG REQUIRED)
-target_link_libraries(social3 PRIVATE nlohmann_json::nlohmann_json)
+find_package(OpenSSL REQUIRED)
+target_link_libraries(social3 PRIVATE OpenSSL::SSL OpenSSL::Crypto)
 file(COPY templates DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY static DESTINATION ${CMAKE_BINARY_DIR})
 

@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>Social3</title>
+    <title>Регистрация</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.1.3/dist/zephyr/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
-    <link rel="stylesheet" href="assets/css/styles.min.css">
+    <link rel="stylesheet" href="static/assets/css/styles.min.css">
 </head>
 
 <body style="background: var(--bs-gray-100);">
@@ -27,14 +27,16 @@
                             <div class="bs-icon-xl bs-icon-circle bs-icon-primary bs-icon my-4"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-person">
                                     <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"></path>
                                 </svg></div>
-                            <form class="text-center" method="post">
-                                <div class="mb-3"><input class="form-control" type="text" placeholder="Логин" required="" minlength="3"></div>
-                                <div class="mb-3"><input class="form-control" type="text" placeholder="Имя" required="" minlength="3"></div>
-                                <div class="mb-3"><input class="form-control" type="text" placeholder="Фамилия" required="" minlength="3"></div>
-                                <div class="mb-3"><input class="form-control" type="password" name="password" placeholder="Пароль" required="" minlength="6"></div>
-                                <div class="mb-3"><input class="form-control" type="password" name="password" placeholder="Повторите пароль" required="" minlength="6"></div>
+                            <form class="text-center" method="post" id="register_form">
+                                <div class="mb-3"><input id="login" class="form-control" type="text" placeholder="Логин" required="" minlength="3"></div>
+                                <div class="mb-3"><input id="name" class="form-control" type="text" placeholder="Имя" required="" minlength="3"></div>
+                                <div class="mb-3"><input id="surname" class="form-control" type="text" placeholder="Фамилия" required="" minlength="3"></div>
+                                <div class="mb-3"><input id="pass1" class="form-control" type="password" name="password" placeholder="Пароль" required="" minlength="6"></div>
+                                <div class="mb-3"><input id="pass2" class="form-control" type="password" name="password" placeholder="Повторите пароль" required="" minlength="6"></div>
                                 <div class="mb-3"><button class="btn btn-primary d-block w-100" type="submit">Зарегистрироваться</button></div>
-                            </form><small class="form-text text-center text-danger">Произошла ошибка: пароль должен быть не короче 5 символов</small>
+                            </form>
+                            <small class="form-text text-center text-danger d-none" id="error_msg"></small>
+                            <small class="form-text text-center text-success d-none" id="success_msg"></small>
                         </div>
                     </div>
                 </div>
@@ -42,7 +44,98 @@
         </div>
     </section>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/script.min.js"></script>
+    <script src="static/assets/js/script.min.js"></script>
+    <script>
+        let error_msg = document.querySelector("#error_msg");
+        let success_msg = document.querySelector("#success_msg");
+        let register_form = document.querySelector("#register_form");
+        let login = document.querySelector("#login");
+        let name = document.querySelector("#name");
+        let surname = document.querySelector("#surname");
+        let pass1 = document.querySelector("#pass1");
+        let pass2 = document.querySelector("#pass2");
+
+        async function submit(event){
+            event.preventDefault();
+            if (pass1.value.trim() !== pass2.value.trim()){
+                error_msg.classList.remove("d-none");
+                error_msg.innerHTML = "Пароли не совпадают";
+                return;
+            }
+            else if (pass1.value.trim().length < 8){
+                error_msg.classList.remove("d-none");
+                error_msg.innerHTML = "Пароль не может быть короче 8 символов";
+                return;
+            }
+            else if (pass1.value.trim().length > 64){
+                error_msg.classList.remove("d-none");
+                error_msg.innerHTML = "Пароль не может быть длиннее 64 символов";
+                return;
+            }
+            else if (name.value.trim().length < 2){
+                error_msg.classList.remove("d-none");
+                error_msg.innerHTML = "Слишком короткое имя";
+                return;
+            }
+            else if (name.value.trim().length > 64){
+                error_msg.classList.remove("d-none");
+                error_msg.innerHTML = "Слишком длинное имя";
+                return;
+            }
+            else if (surname.value.trim().length < 2){
+                error_msg.classList.remove("d-none");
+                error_msg.innerHTML = "Слишком короткая фамилия";
+                return;
+            }
+            else if (surname.value.trim().length > 64){
+                error_msg.classList.remove("d-none");
+                error_msg.innerHTML = "Слишком длинная фамилия";
+                return;
+            }
+            else if (login.value.trim().length < 2){
+                error_msg.classList.remove("d-none");
+                error_msg.innerHTML = "Слишком короткий логин";
+                return;
+            }
+            else if (login.value.trim().length > 64){
+                error_msg.classList.remove("d-none");
+                error_msg.innerHTML = "Слишком длинный логин";
+                return;
+            }
+            let req = await fetch("/register", {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json;charset=utf-8'
+                },
+                body: JSON.stringify(
+                    {
+                        login: login.value.trim(),
+                        name: name.value.trim(),
+                        surname: surname.value.trim(),
+                        password: pass1.value.trim(),
+                    }
+                )
+            })
+            let response = await req.json();
+            if (response.hasOwnProperty("error")){
+                if (response.error === "login"){
+                    error_msg.classList.remove("d-none");
+                    error_msg.innerHTML = "Данный логин уже занят, выберите другой";
+                }
+                else {
+                    error_msg.classList.remove("d-none");
+                    error_msg.innerHTML = "Произошла ошибка. Проверьте корректность заполнения полей";
+                }
+            }
+            else if (response.hasOwnProperty("success")){
+                success_msg.classList.remove("d-none");
+                success_msg.innerHTML = "Вы успешно зарегистрировались! Вернитесь на страницу <a href='/login'>авторизации</a>";
+                error_msg.classList.add("d-none");
+            }
+        }
+        register_form.onsubmit = submit;
+    </script>
 </body>
 
 </html>

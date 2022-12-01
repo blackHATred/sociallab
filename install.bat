@@ -6,3 +6,4 @@ git clone https://github.com/Microsoft/vcpkg.git
 .\vcpkg\vcpkg.exe install nlohmann-json
 .\vcpkg\vcpkg.exe install jwt-cpp
 .\vcpkg\vcpkg.exe install mbedtls
+.\vcpkg\vcpkg.exe install icu
