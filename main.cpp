@@ -10,6 +10,8 @@
 #include <mutex>
 #include <utility>
 #include "totp.cpp"
+#include <cstdint>
+#include <cstdio>
 
 using namespace std;
 
@@ -21,21 +23,36 @@ string secret_code = "top_secret";
 
 class User {
 public:
-    u_int64 id{};
-    vector<u_int64> friends = vector<u_int64>();
-    vector<u_int64> blacklist = vector<u_int64>();
+    /** ID пользователя */
+    u_int64_t id{};
+    /** ID друзей */
+    vector<u_int64_t> friends = vector<u_int64_t>();
+    /** ID каждого из ЧС */
+    vector<u_int64_t> blacklist = vector<u_int64_t>();
+    /** Пароль */
     string password;
+    /** Описание профиля */
     string description;
+    /** Имя */
     string name;
+    /** Фамилия */
     string surname;
+    /** Логин */
     string login;
+    /** Количество непрочитанных сообщений  */
+    uint unread_msgs{};
+    /** 2FA включен */
     bool tfa_on{};
+    /** Фото профиля (base64) */
+    string picture;
 
     /**
      * Сохранение пользователя в БД
      * @param db - объект базы данных пользователей
      */
-    void save_user(sw::redis::Redis db) const {
+    void save_user(sw::redis::Redis& db) const {
+        if (!validate_data(login, name, surname, password))
+            throw runtime_error("Невалидные данные");
         crow::json::wvalue data;
         data["id"] = id;
         data["friends"] = friends;
@@ -45,7 +62,9 @@ public:
         data["name"] = name;
         data["surname"] = surname;
         data["login"] = login;
+        data["unread_msgs"] = unread_msgs;
         data["tfa_on"] = tfa_on;
+        db.set(login+"_picture", picture);
         db.set(to_string(id), data.dump());
         db.set(login, to_string(id));
     }
@@ -55,7 +74,7 @@ public:
      * @param user_id - id пользователя, которого нужно получить
      * @return найденный пользователь
      */
-    static User get_user(sw::redis::Redis db, long unsigned int user_id) {
+    static User get_user(sw::redis::Redis& db, long unsigned int user_id) {
         auto json_info = db.get(to_string(user_id));
         User user;
         if (json_info) {
@@ -68,6 +87,8 @@ public:
             user.name = data["name"].s();
             user.surname = data["surname"].s();
             user.login = data["login"].s();
+            user.unread_msgs = data["unread_msgs"].i();
+            user.picture = *db.get(string(data["login"].s())+"_picture");
             user.tfa_on = data["tfa_on"].b();
         } else {
             throw runtime_error("Пользователя с таким айди не существует!");
@@ -80,10 +101,10 @@ public:
      * @param login - login пользователя, которого нужно получить
      * @return найденный пользователь
      */
-    static User get_user_by_login(sw::redis::Redis db, const string& login) {
+    static User get_user_by_login(sw::redis::Redis& db, const string& login) {
         auto user_id = db.get(login);
         if (user_id) {
-            return get_user(db, stoull(user_id.value()));
+            return get_user(db, stoul(user_id.value()));
         } else {
             throw runtime_error("Пользователя с таким логином не существует!");
         }
@@ -97,7 +118,7 @@ public:
      * @param password - пароль пользователя
      * @return id зарегистрированного пользователя
      */
-    static User register_user(sw::redis::Redis db, const string& login, const string& name, const string&  surname, string password) {
+    static User register_user(sw::redis::Redis& db, const string& login, const string& name, const string&  surname, string password) {
         if (!User::validate_data(login, name, surname, password)) throw runtime_error("Данные невалидны");
         User user;
         user.id = last_user + 1;
@@ -107,14 +128,16 @@ public:
         user.name = to_title(name);
         user.surname = to_title(surname);
         user.description = "Новый пользователь";
-        user.friends = vector<u_int64>();
-        user.blacklist = vector<u_int64>();
+        user.friends = vector<u_int64_t>();
+        user.blacklist = vector<u_int64_t>();
         user.password = std::move(password);
+        user.unread_msgs = 0;
         user.tfa_on = false;
-        user.save_user(std::move(db));
+        user.picture = basic_avatar;
+        user.save_user(db);
         return user;
     }
-//
+
     /**
      * Проверка на валидность регистрационных данных
      * @param login - логин пользователя
@@ -245,13 +268,13 @@ public:
     /**
      * Получить пользователя по токену
      * */
-    static User get_user(sw::redis::Redis db_user, const string& t){
+    static User get_user(sw::redis::Redis& db_user, const string& t){
         auto decoded_token = jwt::decode(t);
         auto verifier = jwt::verify()
                 .allow_algorithm(jwt::algorithm::hs256{secret_code})
                 .with_issuer("auth0");
         verifier.verify(decoded_token);
-        return User::get_user(std::move(db_user), stoll(decoded_token.get_payload_claim("user_id").as_string()));
+        return User::get_user(db_user, stoll(decoded_token.get_payload_claim("user_id").as_string()));
     }
     /**
      * Генерация токена для пользователя
@@ -267,10 +290,11 @@ public:
 };
 
 int main(int argc, char *argv[]) {
+    setlocale(LC_ALL, "Russian");
 #ifdef __linux__
     setlocale(LC_ALL, "Russian");
 #else
-    SetConsoleOutputCP( 65001 );
+    // SetConsoleOutputCP( 65001 );
 #endif
     crow::App<crow::CookieParser> app;
     /**
@@ -303,29 +327,29 @@ int main(int argc, char *argv[]) {
     auto session_db = sw::redis::Redis(connection_options);
     // Айди последнего пользователя, по умолчанию -1
     if (user_db.get("&last_user")) {
-        sscanf_s(user_db.get("&last_user")->c_str(), "%lld", &last_user);
+        sscanf(user_db.get("&last_user")->c_str(), "%lld", &last_user);
     } else {
         user_db.set("&last_user", "-1");
     }
     // Айди последнего сообщения, по умолчанию -1
     if (user_db.get("&last_msg")) {
-        sscanf_s(user_db.get("&last_msg")->c_str(), "%lld", &last_user);
+        sscanf(user_db.get("&last_msg")->c_str(), "%lld", &last_user);
     } else {
         user_db.set("&last_msg", "-1");
     }
     // Айди последней жалобы, по умолчанию -1
     if (user_db.get("&last_mdr")) {
-        sscanf_s(user_db.get("&last_mdr")->c_str(), "%lld", &last_user);
+        sscanf(user_db.get("&last_mdr")->c_str(), "%lld", &last_user);
     } else {
         user_db.set("&last_mdr", "-1");
     }
-
+    /** Базовая ссылка переадресует на страницу авторизации */
     CROW_ROUTE(app, "/")([](const crow::request &req, crow::response& res) {
         res.redirect("/login");
         res.end();
     });
+    /** Авторизация */
     CROW_ROUTE(app, "/login").methods("GET"_method, "POST"_method)([&app, &user_db](const crow::request &req) {
-        // TODO: доделать авторизацию!
         auto res = crow::response();
         res.body = crow::mustache::load_text("login.html");
         auto& ctx = app.get_context<crow::CookieParser>(req);
@@ -349,11 +373,9 @@ int main(int argc, char *argv[]) {
             auto req_json = crow::json::load(req.body);
             crow::json::wvalue res_json;
             try{
-                if(!(req_json.has("login") && req_json.has("password") && req_json.has("tfa"))){
-                    throw runtime_error("Переданы не все данные");
-                }
                 auto user = User::get_user_by_login(user_db, req_json["login"].s());
                 if (user.tfa_on){
+                    cout << calcTotp(std::move(decodeBase32(secret_code+to_string(user.id))), 0, 30, std::time(nullptr), 6, calcSha1Hash, 64) << endl;
                     if (req_json["tfa"] == ""){
                         // Если пользователь пытается войти, то запрашиваем код 2fa
                         res_json["error"] = "tfa_required";
@@ -368,12 +390,14 @@ int main(int argc, char *argv[]) {
                         res.redirect("/me");
                     }
                 }
-                else{
+                else if (user.password == req_json["password"].s()){
                     // Пароль и логин верные
                     ctx.set_cookie("token", Session::generate_token(user));
                     res.redirect("/me");
                 }
-
+                else {
+                    throw runtime_error("Неверный пароль");
+                }
             }
             catch (...) {
                 res_json["error"] = "incorrect_data";
@@ -382,6 +406,7 @@ int main(int argc, char *argv[]) {
             return res;
         }
     });
+    /** Регистрация */
     CROW_ROUTE(app, "/register").methods("GET"_method, "POST"_method)([&app, &user_db](const crow::request &req){
         auto res = crow::response();
         res.body = crow::mustache::load_text("register.html");
@@ -428,13 +453,112 @@ int main(int argc, char *argv[]) {
             return res;
         }
     });
-    CROW_ROUTE(app, "/msg").methods("POST"_method)([](const crow::request &req) {
-        crow::json::wvalue request(crow::json::load(req.body));
-        crow::json::wvalue response;
-        response["status"] = "success";
-        return response;
+    /**
+     * Выход из профиля.
+     * Чистим куки и уходим на страницу авторизации
+     */
+    CROW_ROUTE(app, "/exit").methods("GET"_method)([&app](const crow::request &req){
+        auto res = crow::response();
+        auto& ctx = app.get_context<crow::CookieParser>(req);
+        ctx.set_cookie("token", "");
+        res.redirect("/login");
+        return res;
     });
-
+    /** Рендер страницы пользователя */
+    CROW_ROUTE(app, "/me").methods("GET"_method, "POST"_method)([&app, &user_db](const crow::request &req){
+        User user;
+        auto res = crow::response();
+        res.body = crow::mustache::load_text("my_profile.html");
+        auto& ctx = app.get_context<crow::CookieParser>(req);
+        string token = ctx.get_cookie("token");
+        try{
+            user = Session::get_user(user_db, token);
+        }
+        catch (...){
+            // Токен оказался невалидным, обнуляем его
+            ctx.set_cookie("token", "");
+            res.redirect("/login");
+            return res;
+        }
+        if (method_name(req.method) == "GET") {
+            return res;
+        }
+        // Если не GET, то меняем данные
+        auto req_json = crow::json::load(req.body);
+        crow::json::wvalue res_json;
+        try {
+            if (req_json["type"].s() == "main_info_edit") {
+                user.name = req_json["name"].s();
+                user.surname = req_json["surname"].s();
+                user.description = req_json["description"].s();
+                user.save_user(user_db);
+                res_json["success"] = true;
+            } else if (req_json["type"].s() == "pass_update") {
+                if (user.password != req_json["password1"].s()) {
+                    res_json["error"] = "password";
+                } else {
+                    user.password = req_json["password2"].s();
+                    user.save_user(user_db);
+                    res_json["success"] = true;
+                }
+            } else if (req_json["type"].s() == "profile_photo_update") {
+                user.picture = req_json["photo"].s();
+                user.save_user(user_db);
+                res_json["success"] = true;
+            } else if (req_json["type"].s() == "tfa_toggle"){
+                user.tfa_on = req_json["check"].b();
+                user.save_user(user_db);
+                res_json["toggle"] = user.tfa_on;
+            }
+        }
+        catch(const std::exception &exc){
+            cerr << exc.what() << endl;
+            res_json["error"] = true;
+        }
+        res.body = res_json.dump();
+        return res;
+    });
+    /**
+     * Информация о пользователе
+     */
+    CROW_ROUTE(app, "/my_info").methods("GET"_method)([&app, &user_db](const crow::request &req){
+        auto res = crow::response();
+        crow::json::wvalue res_json;
+        auto& ctx = app.get_context<crow::CookieParser>(req);
+        string token = ctx.get_cookie("token");
+        if (token.empty()){
+            res.redirect("/login");
+            return res;
+        }
+        else {
+            try{
+                auto user = Session::get_user(user_db, token);
+                res_json["tfa_secret"] = Base32Encode(secret_code+to_string(user.id));
+                res_json["tfa_on"] = user.tfa_on;
+                res_json["login"] = user.login;
+                res_json["name"] = user.name;
+                res_json["surname"] = user.surname;
+                res_json["description"] = user.description;
+                res_json["unread_msgs"] = user.unread_msgs;
+                res_json["picture"] = *user_db.get(user.login+"_picture");
+                res_json["friends"] = user.friends;
+                res.body = res_json.dump();
+                return res;
+            }
+            catch (...){
+                // Токен оказался невалидным, обнуляем его
+                ctx.set_cookie("token", "");
+                res.redirect("/login");
+                return res;
+            }
+        }
+    });
+    /**
+     * Последние 20 постов пользователя
+     */
+    CROW_ROUTE(app, "/last_posts").methods("GET"_method)([&app, &user_db](const crow::request &req){
+        return 0;
+    });
     // Websocket для онлайн-чаттинга
     mutex mtx;
     unordered_set<crow::websocket::connection *> users_connections;

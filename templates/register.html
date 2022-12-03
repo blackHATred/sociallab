@@ -119,7 +119,7 @@
             })
             let response = await req.json();
             if (response.hasOwnProperty("error")){
-                if (response.error === "login"){
+                if (response["error"] === "login"){
                     error_msg.classList.remove("d-none");
                     error_msg.innerHTML = "Данный логин уже занят, выберите другой";
                 }

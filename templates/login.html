@@ -24,7 +24,7 @@
                         <input class="form-control" id="tfa_value" type="text" placeholder="6-ти значный код" name="tfa_code" required="" inputmode="numeric" minlength="6" maxlength="6">
                     </form>
                 </div>
-                <div class="modal-footer"><button class="btn btn-primary" type="button">Отправить</button></div>
+                <div class="modal-footer"><button class="btn btn-primary" type="button" onclick="">Отправить</button></div>
             </div>
         </div>
     </div>
@@ -86,18 +86,19 @@
                 window.location.href = req.url;
             }
             let response = await req.json();
-            if (response.hasOwnProperty("error") && response.error === "tfa_required"){
+            if (response.hasOwnProperty("error") && response["error"] === "tfa_required"){
                 modal.show();
             }
-            else if (response.hasOwnProperty("error") && response.error === "incorrect_data"){
+            else if (response.hasOwnProperty("error") && response["error"] === "incorrect_data"){
                 modal.hide();
                 error_msg.classList.remove("d-none");
                 error_msg.innerHTML = "Пользователя с такими данными не существует";
             }
-            else if (response.hasOwnProperty("error") && response.error === "tfa_incorrect"){
+            else if (response.hasOwnProperty("error") && response["error"] === "tfa_incorrect"){
                 modal.hide();
                 error_msg.classList.remove("d-none");
                 error_msg.innerHTML = "Введён неверный код 2FA";
+                document.querySelector("#tfa_value").value = "";
             }
         }
         login_form.onsubmit = submit;

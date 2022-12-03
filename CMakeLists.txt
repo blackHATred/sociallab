@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.2)
-set (CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project(social3)
 add_executable(social3 main.cpp)
 

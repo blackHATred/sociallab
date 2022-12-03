@@ -1,13 +1,7 @@
-#include <cctype>
 #include <cstdint>
-#include <cstdlib>
-#include <cstring>
-#include <ctime>
 #include <exception>
 #include <iomanip>
-#include <iostream>
 #include <sstream>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -35,8 +29,8 @@ vector<uint8_t> decodeBase32(std::string const& encoded_string) {
     int i = 0;
     int j = 0;
     int in_ = 0;
-    BYTE char_array_4[4], char_array_3[3];
-    vector<BYTE> ret;
+    uint8_t char_array_4[4], char_array_3[3];
+    vector<uint8_t> ret;
 
     while (in_len-- && ( encoded_string[in_] != '=')) {
         char_array_4[i++] = encoded_string[in_]; in_++;
