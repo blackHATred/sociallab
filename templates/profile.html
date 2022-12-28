@@ -8,205 +8,20 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.1.3/dist/zephyr/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
-    <link rel="stylesheet" href="assets/css/styles.min.css">
+    <link rel="stylesheet" href="static/assets/css/styles.min.css">
 </head>
 
 <body style="background: var(--bs-gray-100);">
-    <!-- Окно редактирования информации профиля -->
-    <div class="modal fade" role="dialog" tabindex="-1" id="modal-1">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Редактирование профиля</h4>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="main_info_edit" class="text-center" style="padding: 32px;">
-                        <h5>Основная информация</h5>
-                        <input class="form-control" type="text" placeholder="Имя" name="name" value="Абоба" style="margin-bottom: 4px;margin-top: 4px;" required="" minlength="1" id="name_edit">
-                        <input class="form-control" type="text" placeholder="Фамилия" name="surname" style="margin-bottom: 4px;margin-top: 4px;" required="" minlength="1" id="surname_edit">
-                        <input class="form-control" type="text" placeholder="Описание" name="description" style="margin-bottom: 4px;margin-top: 4px;" required="" id="description_edit">
-                        <p class="d-none" style="color: var(--bs-red);text-align: center;" id="main_info_error">Произошла ошибка. Проверьте данные</p>
-                        <p class="d-none" style="color: var(--bs-green);text-align: center;" id="main_info_success">Данные успешно обновлены, перезагрузите страницу</p>
-                        <button class="btn btn-primary" type="submit" id="main_info_submit">Сохранить</button>
-                    </form>
-                    <script>
-                        let main_info_edit = document.querySelector("#main_info_edit");
-                        let name_edit = document.querySelector("#name_edit");
-                        let surname_edit = document.querySelector("#surname_edit");
-                        let description_edit = document.querySelector("#description_edit");
-                        let main_info_error = document.querySelector("#main_info_error");
-                        let main_info_success = document.querySelector("#main_info_success");
-
-                        async function submit_main_info(event){
-                            event.preventDefault();
-                            let req = await fetch("/me", {
-                                method: 'POST',
-                                credentials: 'include',
-                                body: JSON.stringify(
-                                    {
-                                        type: "main_info_edit",
-                                        name: name_edit.value.trim(),
-                                        surname: surname_edit.value.trim(),
-                                        description: description_edit.value.trim()
-                                    }
-                                )
-                            })
-                            let response = await req.json();
-                            if (response.hasOwnProperty("error")) {
-                                main_info_success.classList.add("d-none");
-                                main_info_error.classList.remove("d-none");
-                            }
-                            else {
-                                main_info_error.classList.add("d-none");
-                                main_info_success.classList.remove("d-none");
-                            }
-                        }
-                        main_info_edit.onsubmit = submit_main_info;
-                    </script>
-                    <form id="pass_update" class="text-center" style="padding: 32px;">
-                        <h5>Смена пароля</h5>
-                        <input class="form-control" type="password" placeholder="Текущий пароль" name="password" style="margin-top: 4px;margin-bottom: 4px;" minlength="8" required="" id="password1">
-                        <input class="form-control" type="password" placeholder="Новый пароль" name="new_password" style="margin-top: 4px;margin-bottom: 4px;" required="" minlength="8" id="password2">
-                        <p id="pass_update_error" class="d-none" style="color: var(--bs-red);text-align: center;">Произошла ошибка</p>
-                        <p id="pass_update_success" class="d-none" style="color: var(--bs-green);text-align: center;">Пароль успешно обновлён</p>
-                        <button class="btn btn-primary" type="submit">Сохранить</button>
-                    </form>
-                    <script>
-                        let pass_update = document.querySelector("#pass_update");
-                        let password1 = document.querySelector("#password1");
-                        let password2 = document.querySelector("#password2");
-                        let pass_update_error = document.querySelector("#pass_update_error");
-                        let pass_update_success = document.querySelector("#pass_update_success");
-
-                        async function submit_main_info(event){
-                            event.preventDefault();
-
-                            let req = await fetch("/me", {
-                                method: 'POST',
-                                credentials: 'include',
-                                body: JSON.stringify(
-                                    {
-                                        type: "pass_update",
-                                        password_current: password1.value.trim(),
-                                        password_new: password2.value.trim(),
-                                    }
-                                )
-                            })
-                            let response = await req.json();
-                            if (response.hasOwnProperty("error") && response["error"] === "password") {
-                                pass_update_success.classList.add("d-none");
-                                pass_update_error.classList.remove("d-none");
-                                pass_update_error.innerHTML = "Неверный пароль";
-                            }
-                            else if (response.hasOwnProperty("error")) {
-                                pass_update_success.classList.add("d-none");
-                                pass_update_error.classList.remove("d-none");
-                                pass_update_error.innerHTML = "Произошла ошибка. Проверьте корректность заполнения полей";
-                            }
-                            else {
-                                pass_update_error.classList.add("d-none");
-                                pass_update_success.classList.remove("d-none");
-                            }
-                        }
-                        pass_update.onsubmit = submit_main_info;
-                    </script>
-                    <form id="photo_profile_update" class="text-center" style="padding: 32px;">
-                        <h5>Фотография профиля (.png/.jpg)</h5>
-                        <input id="photo_profile_file" class="form-control" type="file" required="" accept="image/*">
-                        <p id="photo_profile_error" style="color: var(--bs-red);text-align: center;">Ошибка: произошла непредвиденная ошибка; проверьте, что объём вашей фотографии не превышает 4 МБ</p>
-                        <p id="photo_profile_success" style="color: var(--bs-green);text-align: center;">Фотография профиля успешно обновлена</p>
-                        <button class="btn btn-primary" type="submit">Сохранить</button>
-                    </form>
-                    <script>
-                        function getBase64(file) {
-                            let reader = new FileReader();
-                            reader.readAsDataURL(file);
-                            reader.onload = function () {
-                                return reader.result;
-                            };
-                            reader.onerror = function (error) {
-                                console.log('Error: ', error);
-                            };
-                            return "";
-                        }
-                        let photo_profile_update = document.querySelector("#photo_profile_update");
-                        let photo_profile_file = document.querySelector("#photo_profile_file");
-                        let photo_profile_error = document.querySelector("#photo_profile_error");
-                        let photo_profile_success = document.querySelector("#photo_profile_success");
-
-                        async function submit_main_info(event){
-                            event.preventDefault();
-
-                            let coded_photo = getBase64(photo_profile_file.files[0]);
-                            if (coded_photo === ""){
-                                photo_profile_error.classList.remove("d-none");
-                                return;
-                            }
-                            let req = await fetch("/me", {
-                                method: 'POST',
-                                credentials: 'include',
-                                body: JSON.stringify(
-                                    {
-                                        type: "profile_photo_update",
-                                        photo: coded_photo,
-                                    }
-                                )
-                            })
-                            let response = await req.json();
-                            if (response.hasOwnProperty("error")) {
-                                photo_profile_success.classList.add("d-none");
-                                photo_profile_error.classList.remove("d-none");
-                            }
-                            else {
-                                photo_profile_error.classList.add("d-none");
-                                photo_profile_success.classList.remove("d-none");
-                            }
-                        }
-                        photo_profile_update.onsubmit = submit_main_info;
-                    </script>
-                    <form style="padding: 32px;">
-                        <h5>Двухэтапная аутентификация</h5>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="tfaCheck" name="tfa">
-                            <label class="form-check-label" for="tfaCheck" id="tfaCheckText">Выключено</label>
-                        </div>
-                        <small class="form-text">Отсканируйте код через Google Auth, иначе вы не сможете войти!</small>
-                        <div id="tfa_pic"></div>
-                    </form>
-                    <script>
-                        let tfa_check = document.querySelector("#tfaCheck");
-                        let tfa_check_text = document.querySelector("#tfaCheckText");
-                        async function toggle_tfa(){
-                            let req = await fetch("/me", {
-                                method: 'POST',
-                                credentials: 'include',
-                                body: JSON.stringify(
-                                    {
-                                        type: "tfa_toggle",
-                                        check: tfa_check.check
-                                    }
-                                )
-                            })
-                            let response = await req.json();
-                            if (response["toggle"] === true){
-                                tfa_check.check = true;
-                                tfa_check_text = "Включено";
-                            }
-                            else {
-                                tfa_check = false;
-                                tfa_check_text = "Выключено";
-                            }
-                        }
-                        tfa_check.onclick = toggle_tfa;
-                    </script>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-light" type="button" data-bs-dismiss="modal">Закрыть</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <script>
+        function get_cookie(name){
+            let cookie = {};
+            document.cookie.split(';').forEach(function (el){
+                let [k, v] = el.split("=");
+                cookie[k.trim()] = v;
+            });
+            return cookie[name];
+        }
+    </script>
 
     <!-- Окно с друзьями -->
     <div class="modal fade" role="dialog" tabindex="-1" id="modal-2">
@@ -216,31 +31,8 @@
                     <h4 class="modal-title">Друзья</h4><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="vstack gap-1">
-                        <div class="d-flex align-items-center" style="max-width: 100%;"><img class="rounded-circle" src="assets/img/image.jpg" style="width: 20%;max-width: 20%;">
-                            <div class="d-flex flex-column" style="max-width: 80%;width: 80%;padding: 6px;"><a class="text-truncate" href="#" style="margin-bottom: -3px;"><span style="color: rgb(73, 80, 87);">Абоба Абобовивввввввввввчвыапывапыddddddddddddddddddddddddddвина</span><br></a>
-                                <p class="text-truncate" style="margin-bottom: 4px;font-size: 13px;color: var(--bs-blue);">@deep_aboba</p>
-                                <div class="btn-group" role="group"><button class="btn btn-primary" data-bs-toggle="tooltip" data-bss-tooltip="" data-bs-placement="bottom" type="button" title="Добавить в друзья" style="padding: 0;"><i class="fas fa-user-plus"></i></button><button class="btn btn-danger" data-bs-toggle="tooltip" data-bss-tooltip="" data-bs-placement="bottom" type="button" title="Добавить в чёрный список" style="padding: 0;"><i class="fas fa-user-times"></i></button></div>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center" style="max-width: 100%;"><img class="rounded-circle" src="assets/img/image.jpg" style="width: 20%;max-width: 20%;">
-                            <div class="d-flex flex-column" style="max-width: 80%;width: 80%;padding: 6px;"><a class="text-truncate" href="#" style="margin-bottom: -3px;"><span style="color: rgb(73, 80, 87);">Абоба Абобовивввввввввввчвыапывапыddddddddddddddddddddddddddвина</span><br></a>
-                                <p class="text-truncate" style="margin-bottom: 4px;font-size: 13px;color: var(--bs-blue);">@deep_aboba</p>
-                                <div class="btn-group" role="group"><button class="btn btn-primary disabled" data-bs-toggle="tooltip" data-bss-tooltip="" data-bs-placement="bottom" type="button" title="Добавить в друзья" style="padding: 0;" disabled=""><i class="fas fa-user-plus"></i></button><button class="btn btn-danger" data-bs-toggle="tooltip" data-bss-tooltip="" data-bs-placement="bottom" type="button" title="Отменить заявку в друзья" style="padding: 0;"><i class="fas fa-user-times"></i></button></div>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center" style="max-width: 100%;"><img class="rounded-circle" src="assets/img/image.jpg" style="width: 20%;max-width: 20%;">
-                            <div class="d-flex flex-column" style="max-width: 80%;width: 80%;padding: 6px;"><a class="text-truncate" href="#" style="margin-bottom: -3px;"><span style="color: rgb(73, 80, 87);">Абоба Абобовивввввввввввчвыапывапыddddddddddddddddddddddddddвина</span><br></a>
-                                <p class="text-truncate" style="margin-bottom: 4px;font-size: 13px;color: var(--bs-blue);">@deep_aboba</p>
-                                <div class="btn-group" role="group"><button class="btn btn-success" data-bs-toggle="tooltip" data-bss-tooltip="" data-bs-placement="bottom" type="button" title="Убрать из чёрного списка" style="padding: 0;"><i class="fas fa-user-times"></i></button><button class="btn btn-danger" data-bs-toggle="tooltip" data-bss-tooltip="" data-bs-placement="bottom" type="button" title="Отправить жалобу" style="padding: 0;"><i class="fas fa-poo"></i></button></div>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center" style="max-width: 100%;"><img class="rounded-circle" src="assets/img/image.jpg" style="width: 20%;max-width: 20%;">
-                            <div class="d-flex flex-column" style="max-width: 80%;width: 80%;padding: 6px;"><a class="text-truncate" href="#" style="margin-bottom: -3px;"><span style="color: rgb(73, 80, 87);">Абоба Абобовивввввввввввчвыапывапыddddddddddddddddddddddddddвина</span><br></a>
-                                <p class="text-truncate" style="margin-bottom: 4px;font-size: 13px;color: var(--bs-blue);">@deep_aboba</p>
-                                <div class="btn-group" role="group"><button class="btn btn-success disabled" data-bs-toggle="tooltip" data-bss-tooltip="" data-bs-placement="bottom" type="button" title="Убрать из чёрного списка" style="padding: 0;" disabled=""><span class="spinner-border spinner-border-sm" role="status"></span></button><button class="btn btn-danger" data-bs-toggle="tooltip" data-bss-tooltip="" data-bs-placement="bottom" type="button" title="Отправить жалобу" style="padding: 0;"><i class="fas fa-poo"></i></button></div>
-                            </div>
-                        </div>
+                    <div id="friends_window" class="vstack gap-1">
+
                     </div>
                 </div>
             </div>
@@ -253,7 +45,7 @@
             <div class="col-12 col-md-4 col-lg-3 offset-xxl-0">
                 <div class="vstack gap-1 shadow-lg" style="background: var(--bs-white);border-radius: 12px;padding: 20px;margin: 6px;">
                     <div>
-                        <a class="btn btn-primary" role="button" style="width: 100%;" href="/profile">
+                        <a class="btn btn-primary" role="button" style="width: 100%;" href="/me">
                             <i class="fas fa-user"></i>&nbsp;Профиль
                         </a>
                     </div>
@@ -268,88 +60,34 @@
                     <div>
                         <a class="btn btn-primary" role="button" style="width: 100%;" href="/friends"> <i class="fas fa-smile"></i>&nbsp;Друзья</a>
                     </div>
-                    <div><a class="btn btn-danger" role="button" style="width: 100%;" href="/exit">Выйти</a></div>
+                    <div>
+                        <a class="btn btn-danger" role="button" style="width: 100%;" href="/exit">Выйти</a>
+                    </div>
                 </div>
             </div>
             <div class="col-12 col-md-8 col-lg-7 col-xl-7 offset-lg-1 offset-xl-1">
                 <div class="shadow-lg" style="border-radius: 12px;padding: 20px;background: var(--bs-white);margin: 6px;">
                     <div class="d-flex">
-                        <img id="profile_pic" class="rounded-circle" src="" style="max-width: 20%;width: 20%;height: 20%;max-height: 20%;">
+                        <div id="profile_pic" class="border rounded-circle" overflow="hidden" style="height: 200px;min-height: 200px;width: 200px;min-width: 200px;"></div>
                         <div>
                             <h1 id="user_name" class="text-break" style="margin-bottom: 0px;padding-top: 6px;padding-left: 6px;"></h1>
                             <p id="user_login" style="margin-bottom: 0px;padding-left: 6px;padding-bottom: 6px;">@</p>
                             <p style="margin-bottom: 0px;padding-left: 6px;padding-bottom: 6px;">
-                                <button id="friends" class="btn btn-light btn-sm" type="button" data-bs-target="#modal-2" data-bs-toggle="modal">1 друг</button>
+                                <button id="friends" class="btn btn-light btn-sm" type="button" data-bs-target="#modal-2" data-bs-toggle="modal"></button>
                             </p>
                             <p id="description" style="margin-bottom: 0px;padding-left: 6px;padding-bottom: 6px;"></p>
-                            <button class="btn btn-primary" type="button" data-bs-target="#modal-1" data-bs-toggle="modal"><i class="fas fa-pen"></i>&nbsp;Редактировать профиль</button>
                             <div class="btn-group" role="group">
-                                <button class="btn btn-primary" type="button">Добавить в друзья</button>
-                                <button class="btn btn-primary" type="button">Отменить заявку</button>
-                                <button class="btn btn-danger" type="button">Добавить в чёрный список</button>
-                                <button class="btn btn-danger" type="button">Отправить жалобу</button>
+                                <button id="add_friend_btn" class="btn btn-primary d-none" type="button">Добавить в друзья</button>
+                                <button id="remove_friend_btn" class="btn btn-primary d-none" type="button">Удалить из друзей</button>
+                                <button id="add_blacklist_btn" class="btn btn-danger d-none" type="button">Добавить в чёрный список</button>
+                                <button id="remove_blacklist_btn" class="btn btn-danger d-none" type="button">Убрать из чёрного списка</button>
+                                <button id="send_mdr_btn" class="btn btn-danger" type="button">Отправить жалобу</button>
                             </div>
                         </div>
                     </div>
-                    <!--
-                    <form style="margin-top: 12px;">
-                        <textarea class="form-control" placeholder="Напишите свой пост здесь..." name="post_text"></textarea>
-                        <div class="d-flex" style="margin-top: 4px;">
-                            <input class="form-control" type="file" data-bs-toggle="tooltip" data-bss-tooltip="" data-bs-placement="bottom" name="picture" title="Прикрепите картинку (опционально)" accept="image/*">
-                            <button class="btn btn-primary" type="button" style="margin-left: 4px;">Запостить</button>
-                        </div>
-                    </form>
-                    -->
                     <div style="margin-top: 12px;">
                         <h3>Публикации</h3>
                         <h3 style="color: var(--bs-gray-700);">Здесь пока пусто</h3>
-                        <!-- <div class="vstack">
-                            <div class="card shadow-none" style="margin-top: 4px;margin-bottom: 4px;">
-                                <div class="card-body">
-                                    <h6 class="text-muted card-subtitle mb-2">5 июня 2022
-                                        <button class="btn btn-light" type="button"
-                                                style="margin-left: 4px;padding: 2px;"><i class="fas fa-pen"></i>&nbsp;Редактировать
-                                        </button>
-                                        <button class="btn btn-danger" type="button"
-                                                style="margin-left: 4px;padding: 2px;"><i class="fas fa-times"></i>&nbsp;Удалить
-                                        </button>
-                                    </h6>
-                                    <p class="card-text">Сегодня превосходное утро!</p>
-                                    <form><input class="form-control" type="hidden" name="post_id" value="2"></form>
-                                    <img class="img-fluid" src="assets/img/image.jpg">
-                                    <div class="d-flex align-items-center" style="margin-top: 6px;">
-                                        <button class="btn btn-primary border rounded-pill border-0" type="button"><i
-                                                class="fas fa-thumbs-up" style="font-size: 18px;"></i></button>
-                                        <button class="btn btn-primary disabled border rounded-pill border-0"
-                                                type="button" disabled=""><i class="fas fa-thumbs-up"
-                                                                             style="font-size: 18px;"></i></button>
-                                        <p style="margin-bottom: 0px;padding-left: 8px;">17 лайков</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card shadow-none" style="margin-top: 4px;margin-bottom: 4px;">
-                                <div class="card-body">
-                                    <h6 class="text-muted card-subtitle mb-2">5 июня 2022
-                                        <button class="btn btn-success" type="button"
-                                                style="margin-left: 4px;padding: 2px;"><i class="fas fa-check"></i>&nbsp;Сохранить
-                                        </button>
-                                    </h6>
-                                    <form><input class="form-control" type="hidden" name="post_id" value="2"><textarea
-                                            class="form-control" name="post_text"
-                                            placeholder="Напишите свой пост здесь...">Сегодня превосходное утро!</textarea>
-                                    </form>
-                                    <img class="img-fluid" src="assets/img/image.jpg">
-                                    <div class="d-flex align-items-center" style="margin-top: 6px;">
-                                        <button class="btn btn-primary border rounded-pill border-0" type="button"><i
-                                                class="fas fa-thumbs-up" style="font-size: 18px;"></i></button>
-                                        <button class="btn btn-primary disabled border rounded-pill border-0"
-                                                type="button" disabled=""><i class="fas fa-thumbs-up"
-                                                                             style="font-size: 18px;"></i></button>
-                                        <p style="margin-bottom: 0px;padding-left: 8px;">17 лайков</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> -->
                     </div>
                 </div>
             </div>
@@ -358,47 +96,219 @@
     <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
     <!-- Получение информации -->
     <script>
-        let req = await fetch("/info", {
-            method: 'GET',
-            credentials: 'include',
-            body: JSON.stringify(
-                {
-                    id: Number(document.documentURI).toString()
+        async function k(){
+            let add_friend_btn = document.querySelector("#add_friend_btn"),
+                remove_friend_btn = document.querySelector("#remove_friend_btn"),
+                add_blacklist_btn = document.querySelector("#add_blacklist_btn"),
+                remove_blacklist_btn = document.querySelector("#remove_blacklist_btn"),
+                send_mdr_btn = document.querySelector("#send_mdr_btn");
+
+            // информация о пользователе
+            let req = await fetch("/info"+get_cookie("user_id"), {
+                method: 'GET',
+                credentials: 'include'
+            });
+            if (req.redirected) {
+                window.location.href = req.url;
+            }
+            let response = await req.json();
+            // друзья пользователя
+            let user_friends = response["friends"];
+            // айди пользователя
+            let user_id = response["id"];
+            document.querySelector("#user_name").innerHTML = response["name"] + " " + response["surname"];
+            document.querySelector("#user_login").innerHTML = response["login"]
+            document.querySelector("#description").innerHTML = response["description"];
+            document.querySelector("#profile_pic").style.setProperty("background", `url('${response["picture"]}') center / cover`);
+            if (response["friends"].length % 10 === 1 && response["friends"].length % 100 !== 11) {
+                document.querySelector("#friends").innerHTML = response["friends"].length + " друг";
+            } else if (response["friends"].length % 10 in [2, 3, 4] && !(response["friends"].length % 100 in [12, 13, 14])) {
+                document.querySelector("#friends").innerHTML = response["friends"].length + " друга";
+            } else {
+                document.querySelector("#friends").innerHTML = response["friends"].length + " друзей";
+            }
+            // Информация о клиенте
+            req = await fetch("/my_info", {
+                method: 'GET',
+                credentials: 'include'
+            });
+            if (req.redirected) {
+                window.location.href = req.url;
+            }
+            response = await req.json();
+            if (response["unread_msgs"] === 0) {
+                document.querySelector("#msg_count").classList.add("d-none");
+            } else {
+                document.querySelector("#msg_count").classList.remove("d-none");
+                document.querySelector("#msg_count").innerHTML = response["unread_msgs"];
+            }
+            // жалоба подана
+            if (response["moderates"].includes(user_id)){
+                send_mdr_btn.classList.add("disabled");
+            }
+            // в чс
+            if (response["blacklist"].includes(user_id)){
+                remove_blacklist_btn.classList.remove("d-none");
+            }
+            else {
+                add_blacklist_btn.classList.remove("d-none");
+                // друг
+                if (response["friends"].includes(user_id)){
+                    remove_friend_btn.classList.remove("d-none");
                 }
-            )
-        })
-        if (req.redirected) {
-            window.location.href = req.url;
-        }
-        let response = await req.json();
-        let qrcode = new QRCode(document.getElementById("tfa_pic"), {
-            text: "otpauth://totp/%D0%9B%D0%B0%D0%B1%D0%20%D0%BF%D0%BE%20%D0%9E%D0%90%D0%B8%D0%9F?secret="+response["tfa_secret"],
-            width: 128,
-            height: 128,
-            colorDark : "#5868bf",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
-        name_edit.value = response["name"];
-        surname_edit.value = response["surname"];
-        description_edit.value = response["description"];
-        document.querySelector("#user_name").innerHTML = response["name"] + " " + response["surname"];
-        document.querySelector("#login").innerHTML = response["login"]
-        document.querySelector("#description").innerHTML = response["description"];
-        document.querySelector("#profile_pic").src = response["picture"];
-        if (response["unread_msgs"] === 0){
-            document.querySelector("#msg_count").classList.add("d-none");
-        }
-        else {
-            document.querySelector("#msg_count").classList.remove("d-none");
-            document.querySelector("#msg_count").innerHTML = response["unread_msgs"];
-        }
-        // Различаем свой и чужой профиль
+                else{
+                    add_friend_btn.classList.remove("d-none");
+                }
+            }
+            add_friend_btn.onclick = async function (event){
+                req = await fetch("/friend", {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        "method": "add",
+                        "user_id": user_id
+                    })
+                })
+                response = await req.json();
+                if (response.hasOwnProperty("success")) location.reload();
+            }
+            send_mdr_btn.onclick = async function (event){
+                req = await fetch("/add_moderation", {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        "user_id": user_id
+                    })
+                })
+                response = await req.json();
+                if (response.hasOwnProperty("success")) location.reload();
+            }
+            remove_friend_btn.onclick = async function (event){
+                req = await fetch("/friend", {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        "method": "remove",
+                        "user_id": user_id
+                    })
+                })
+                response = await req.json();
+                if (response.hasOwnProperty("success")) location.reload();
+            }
+            add_blacklist_btn.onclick = async function (event){
+                req = await fetch("/blacklist", {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        "method": "add",
+                        "user_id": user_id
+                    })
+                })
+                response = await req.json();
+                if (response.hasOwnProperty("success")) location.reload();
+            }
+            remove_blacklist_btn.onclick = async function (event){
+                req = await fetch("/blacklist", {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        "method": "remove",
+                        "user_id": user_id
+                    })
+                })
+                response = await req.json();
+                if (response.hasOwnProperty("success")) location.reload();
+            }
+            let friends_window = document.querySelector("#friends_window");
+            async function add_friend_btn_f(id){
+                let rq = await fetch("/friend", {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        "method": "add",
+                        "user_id": id
+                    })
+                });
+                let r = await rq.json();
+                if(r.hasOwnProperty("success")){
+                    document.querySelector(`#add_friend_btn_f${id}`).classList.add("d-none");
+                    document.querySelector(`#rem_friend_btn_f${id}`).classList.remove("d-none");
+                }
+            }
+            async function rem_friend_btn_f(id){
+                let rq = await fetch("/friend", {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        "method": "remove",
+                        "user_id": id
+                    })
+                });
+                let r = await rq.json();
+                if(r.hasOwnProperty("success")){
+                    document.querySelector(`#add_friend_btn_f${id}`).classList.remove("d-none");
+                    document.querySelector(`#rem_friend_btn_f${id}`).classList.add("d-none");
+                }
+            }
+            for (const elem of user_friends) {
+                let req_ = await fetch("/info"+elem, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                let response_ = await req_.json();
 
+                let div1 = document.createElement("div");
+                div1.innerHTML = `
+                <div class="d-flex align-items-center" style="max-width: 100%">
+                <div class="border rounded-circle" overflow="hidden" style="background: url('${response_["picture"]}') center / cover;height: 80px;min-width: 80px;width: 80px;min-height: 80px;"></div>
+                <div class="d-flex flex-column" style="max-width: 80%;width: 80%;padding: 6px;">
+                    <a class="text-truncate" href="/profile${response_['id']}" style="margin-bottom: -3px;">
+                        <span style="color: rgb(73, 80, 87);">${response_["name"]} ${response_["surname"]}</span><br>
+                    </a>
+                     <p class="text-truncate" style="margin-bottom: 4px;font-size: 13px;color: var(--bs-blue);">@${response_['login']}</p>
+                     <div id="btn_group${response_["id"]}" class="btn-group" role="group"></div></div></div>`;
+                friends_window.appendChild(div1);
+                let btn_group = document.createElement("button");
+                btn_group.id = `rem_friend_btn_f${response_["id"]}`;
+                btn_group.className = "btn btn-danger d-none";
+                btn_group.setAttribute("data-bs-toggle", "tooltip");
+                btn_group.setAttribute("data-bss-tooltip", "");
+                btn_group.setAttribute("data-bs-placement", "bottom");
+                btn_group.setAttribute("type", "button");
+                btn_group.setAttribute("title", "Удалить из друзей");
+                btn_group.style.setProperty("padding", "0px");
+                btn_group.innerHTML = "<i class=\"fas fa-user-times\"></i>";
+                btn_group.onclick = async function(){
+                    rem_friend_btn_f(response_["id"]);
+                }
+                document.querySelector(`#btn_group${response_["id"]}`).appendChild(btn_group);
 
+                let btn_group_ = document.createElement("button");
+                btn_group_.id = `add_friend_btn_f${response_["id"]}`;
+                btn_group_.className = "btn btn-primary d-none";
+                btn_group_.setAttribute("data-bs-toggle", "tooltip");
+                btn_group_.setAttribute("data-bss-tooltip", "");
+                btn_group_.setAttribute("data-bs-placement", "bottom");
+                btn_group_.setAttribute("type", "button");
+                btn_group_.setAttribute("title", "Добавить в друзья");
+                btn_group_.style.setProperty("padding", "0px");
+                btn_group_.innerHTML = "<i class=\"fas fa-user-plus\"></i>";
+                btn_group_.onclick = async function(){
+                    add_friend_btn_f(response_["id"]);
+                }
+                document.querySelector(`#btn_group${response_["id"]}`).appendChild(btn_group_);
+                if(response["friends"].includes(response_["id"])){
+                    document.querySelector(`#rem_friend_btn_f${response_["id"]}`).classList.remove("d-none");
+                }
+                else{
+                    document.querySelector(`#add_friend_btn_f${response_["id"]}`).classList.remove("d-none");
+                }
+            }
+        }
+        k();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/script.min.js"></script>
+    <script src="static/assets/js/script.min.js"></script>
 </body>
 
 </html>

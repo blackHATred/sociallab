@@ -116,40 +116,33 @@
                         <input id="photo_profile_file" class="form-control" type="file" required="" accept="image/*">
                         <p id="photo_profile_error" class="d-none" style="color: var(--bs-red);text-align: center;">Ошибка: произошла непредвиденная ошибка; проверьте, что объём вашей фотографии не превышает 4 МБ</p>
                         <p id="photo_profile_success" class="d-none" style="color: var(--bs-green);text-align: center;">Фотография профиля успешно обновлена</p>
-                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                        <button class="btn btn-primary" type="submit" style="margin-top: 4px;">Сохранить</button>
                     </form>
                     <script>
-                        function getBase64(file) {
-                            let reader = new FileReader();
-                            reader.readAsDataURL(file);
-                            reader.onload = function () {
-                                return reader.result;
-                            };
-                            reader.onerror = function (error) {
-                                console.log('Error: ', error);
-                            };
-                            return "";
-                        }
+                        let coded;
                         let photo_profile_update = document.querySelector("#photo_profile_update");
                         let photo_profile_file = document.querySelector("#photo_profile_file");
                         let photo_profile_error = document.querySelector("#photo_profile_error");
                         let photo_profile_success = document.querySelector("#photo_profile_success");
-
+                        photo_profile_file.addEventListener('change', (e) => {
+                            let reader = new FileReader();
+                            reader.onloadend = () => {
+                                coded = reader.result;
+                            }
+                            reader.onerror = function (error) {
+                                console.log('Error: ', error);
+                            };
+                            reader.readAsDataURL(photo_profile_file.files[0]);
+                        });
                         async function submit_main_info(event){
                             event.preventDefault();
-
-                            let coded_photo = getBase64(photo_profile_file.files[0]);
-                            if (coded_photo === ""){
-                                photo_profile_error.classList.remove("d-none");
-                                return;
-                            }
                             let req = await fetch("/me", {
                                 method: 'POST',
                                 credentials: 'include',
                                 body: JSON.stringify(
                                     {
                                         type: "profile_photo_update",
-                                        photo: coded_photo,
+                                        photo: coded,
                                     }
                                 )
                             })
@@ -213,7 +206,7 @@
             <div class="col-12 col-md-4 col-lg-3 offset-xxl-0">
                 <div class="vstack gap-1 shadow-lg" style="background: var(--bs-white);border-radius: 12px;padding: 20px;margin: 6px;">
                     <div>
-                        <a class="btn btn-primary" role="button" style="width: 100%;" href="/profile">
+                        <a class="btn btn-primary" role="button" style="width: 100%;" href="/me">
                             <i class="fas fa-user"></i>&nbsp;Профиль
                         </a>
                     </div>
@@ -234,7 +227,8 @@
             <div class="col-12 col-md-8 col-lg-7 col-xl-7 offset-lg-1 offset-xl-1">
                 <div class="shadow-lg" style="border-radius: 12px;padding: 20px;background: var(--bs-white);margin: 6px;">
                     <div class="d-flex">
-                        <img id="profile_pic" class="rounded-circle" src="" style="max-width: 20%;width: 20%;height: 20%;max-height: 20%;">
+                        <div id="profile_pic" class="border rounded-circle" overflow="hidden" style="height: 200px;min-height: 200px;width: 200px;min-width: 200px;"></div>
+                        <!--<img id="profile_pic" class="rounded-circle" src="" style="max-width: 20%;width: 20%;height: 20%;max-height: 20%;">-->
                         <div>
                             <h1 id="user_name" class="text-break" style="margin-bottom: 0px;padding-top: 6px;padding-left: 6px;"></h1>
                             <p id="user_login" style="margin-bottom: 0px;padding-left: 6px;padding-bottom: 6px;">@</p>
@@ -341,7 +335,7 @@
             document.querySelector("#user_name").innerHTML = response["name"] + " " + response["surname"];
             document.querySelector("#user_login").innerHTML += response["login"];
             document.querySelector("#description").innerHTML = response["description"];
-            document.querySelector("#profile_pic").src = response["picture"];
+            document.querySelector("#profile_pic").style.setProperty("background", `url('${response["picture"]}') center / cover`);
             if (response["friends"].length % 10 === 1 && response["friends"].length % 100 !== 11) {
                 document.querySelector("#friends").innerHTML = response["friends"].length + " друг";
             } else if (response["friends"].length % 10 in [2, 3, 4] && !(response["friends"].length % 100 in [12, 13, 14])) {

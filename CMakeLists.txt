@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.2)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project(social3)
-add_executable(social3 main.cpp)
+add_executable(social3 main.cpp libcppotp/bytes.cpp libcppotp/otp.cpp libcppotp/sha1.cpp)
 
 find_package(Crow CONFIG REQUIRED)
 target_link_libraries(social3 PRIVATE Crow::Crow)

@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.1.3/dist/zephyr/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
-    <link rel="stylesheet" href="assets/css/styles.min.css">
+    <link rel="stylesheet" href="static/assets/css/styles.min.css">
 </head>
 
 <body style="background: var(--bs-gray-100);">
@@ -16,36 +16,136 @@
         <div class="row">
             <div class="col-12 col-md-4 col-lg-3 offset-xxl-0">
                 <div class="vstack gap-1 shadow-lg" style="background: var(--bs-white);border-radius: 12px;padding: 20px;margin: 6px;">
-                    <div><a class="btn btn-primary" role="button" style="width: 100%;" href="/profile"><i class="fas fa-user"></i>&nbsp;Профиль</a></div>
-                    <div><a class="btn btn-primary text-truncate" role="button" style="width: 100%;" href="/chat"><i class="fas fa-comment"></i>&nbsp;Сообщения&nbsp;<span class="badge rounded-pill bg-primary">2</span></a></div>
-                    <div><a class="btn btn-primary" role="button" style="width: 100%;" href="/people"> <i class="fas fa-users"></i>&nbsp;Люди</a></div>
-                    <div><a class="btn btn-primary" role="button" style="width: 100%;" href="/friends"> <i class="fas fa-smile"></i>&nbsp;Друзья</a></div>
+                    <div>
+                        <a class="btn btn-primary" role="button" style="width: 100%;" href="/me">
+                            <i class="fas fa-user"></i>&nbsp;Профиль
+                        </a>
+                    </div>
+                    <div>
+                        <a class="btn btn-primary text-truncate" role="button" style="width: 100%;" href="/chat">
+                            <i class="fas fa-comment"></i>&nbsp;Сообщения&nbsp;<span id="msg_count" class="badge rounded-pill bg-primary d-none">0</span>
+                        </a>
+                    </div>
+                    <div>
+                        <a class="btn btn-primary" role="button" style="width: 100%;" href="/people"> <i class="fas fa-users"></i>&nbsp;Люди</a>
+                    </div>
+                    <div>
+                        <a class="btn btn-primary" role="button" style="width: 100%;" href="/friends"> <i class="fas fa-smile"></i>&nbsp;Друзья</a>
+                    </div>
                     <div><a class="btn btn-danger" role="button" style="width: 100%;" href="/exit">Выйти</a></div>
                 </div>
             </div>
             <div class="col-12 col-md-8 col-lg-5 col-xl-5 offset-lg-1 offset-xl-1">
                 <div class="shadow-lg" style="border-radius: 12px;padding: 20px;background: var(--bs-white);margin: 6px;">
                     <h3 class="text-truncate" style="text-align: center;">Друзья</h3>
-                    <div class="vstack gap-1">
-                        <div class="d-flex align-items-center" style="max-width: 100%;"><img class="rounded-circle" src="assets/img/image.jpg" style="width: 20%;max-width: 20%;">
-                            <div class="d-flex flex-column" style="max-width: 80%;width: 80%;padding: 6px;"><a class="text-truncate" href="#" style="margin-bottom: -3px;"><span style="color: rgb(73, 80, 87);">Абоба Абобовивввввввввввчвыапывапыddddddddddddddddddddddddddвина</span><br></a>
-                                <p class="text-truncate" style="margin-bottom: 4px;font-size: 13px;color: var(--bs-blue);">@deep_aboba</p>
-                                <div class="btn-group" role="group"><button class="btn btn-danger" data-bs-toggle="tooltip" data-bss-tooltip="" data-bs-placement="bottom" type="button" title="Удалить из друзей" style="padding: 0;"><i class="fas fa-user-times"></i></button></div>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center" style="max-width: 100%;"><img class="rounded-circle" src="assets/img/image.jpg" style="width: 20%;max-width: 20%;">
-                            <div class="d-flex flex-column" style="max-width: 80%;width: 80%;padding: 6px;"><a class="text-truncate" href="#" style="margin-bottom: -3px;"><span style="color: rgb(73, 80, 87);">Абоба Абобовивввввввввввчвыапывапыddddddddddddddddddddddddddвина</span><br></a>
-                                <p class="text-truncate" style="margin-bottom: 4px;font-size: 13px;color: var(--bs-blue);">@deep_aboba</p>
-                                <div class="btn-group" role="group"><button class="btn btn-danger disabled" data-bs-toggle="tooltip" data-bss-tooltip="" data-bs-placement="bottom" type="button" title="Отправить жалобу" style="padding: 0;" disabled=""><i class="fas fa-poo"></i></button></div>
-                            </div>
-                        </div>
+                    <div class="vstack gap-1" id="friends_list">
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <!-- Получение информации -->
+    <script>
+        let friends_list = document.querySelector("#friends_list");
+        let user_id = Number(document.documentURI);
+        async function k() {
+            let req_ = await fetch("/my_info", {
+                method: 'GET',
+                credentials: 'include'
+            });
+            let response_ = await req_.json();
+            if (response_["unread_msgs"] === 0) {
+                document.querySelector("#msg_count").classList.add("d-none");
+            } else {
+                document.querySelector("#msg_count").classList.remove("d-none");
+                document.querySelector("#msg_count").innerHTML = response_["unread_msgs"];
+            }
+
+            for(const i of response_["friends"]){
+                // перебираем друзей
+                let req = await fetch("/info"+i, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                let response = await req.json();
+                // главный блок
+                `
+                <div class="align-items-center d-flex" style="max-width: 100%">
+                    <div class="rounded-circle border" overflow="hidden" style="background: url(${response["picture"]}) center / cover; height: 80px; max-height: 80px; width: 80px; max-width: 80px;"></div>
+                    <div class="d-flex flex-column" style="max-width: 80%; width: 80%; padding: 6px">
+                        <a class="text-truncate" href="/profile${response["id"]}" style="margin-bottom: -3px;">
+                            <span style="color: rgb(73, 80, 87);">${response["name"]} ${response["surname"]}</span><br>
+                        </a>
+                        <p class="text-truncate" style="margin-bottom: 4px;font-size: 13px;color: var(--bs-blue);">@${response["login"]}</p>
+                    </div>
+                </div>
+                `
+                let div = document.createElement("div");
+                div.classList.add("align-items-center");
+                div.classList.add("d-flex");
+                div.style.setProperty("max-width", "100%");
+                // аватар
+                let avatar = document.createElement("div");
+                avatar.classList.add("rounded-circle");
+                avatar.classList.add("border");
+                avatar.setAttribute("overflow", "hidden");
+                avatar.style.setProperty("background", `background: url('${response["photo"]}') center / cover`);
+                avatar.style.setProperty("height", "80px");
+                avatar.style.setProperty("max-height", "80px");
+                avatar.style.setProperty("width", "80px");
+                avatar.style.setProperty("max-width", "80px");
+                div.appendChild(avatar);
+                // внутренний блок
+                let inside_div = document.createElement("div");
+                inside_div.classList.add("d-flex");
+                inside_div.classList.add("flex-column");
+                inside_div.style.setProperty("max-width", "80%");
+                inside_div.style.setProperty("width", "80%");
+                inside_div.style.setProperty("padding", "6px");
+                // блок с именем
+                inside_div.innerHTML += "<a class=\"text-truncate\" href=\"/profile" + response["id"] + "\" style=\"margin-bottom: -3px;\">\n" +
+                    "                                    <span style=\"color: rgb(73, 80, 87);\">" + response["name"] + " " + response["surname"] + "</span><br>\n" +
+                    "                                </a>";
+                inside_div.innerHTML += "<p class=\"text-truncate\" style=\"margin-bottom: 4px;font-size: 13px;color: var(--bs-blue);\">@" + response["login"] + "</p>";
+                let inside_div2 = document.createElement("div");
+                inside_div2.classList.add("btn-group");
+                inside_div2.setAttribute("role", "group");
+                let inside_button = document.createElement("button");
+
+                inside_button.innerHTML = "<i class=\"fas fa-user-times\"></i>";
+                inside_button.classList.add("btn");
+                inside_button.classList.add("btn-danger");
+                inside_button.setAttribute("data-bs-toggle", "tooltip");
+                inside_button.setAttribute("data-bss-tooltip", "bottom");
+                inside_button.setAttribute("data-bs-placement", "");
+                inside_button.setAttribute("type", "button");
+                inside_button.setAttribute("title", "Удалить из друзей");
+                inside_button.style.setProperty("padding", "0");
+                inside_button.onclick = async function(event){
+                    rq = await fetch("/friend", {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            "type": "remove",
+                            "user_id": response["id"]
+                        })
+                    });
+                    let r = await rq.json();
+                    if(r.hasOwnProperty("success")){
+                        div.remove();
+                    }
+                };
+                inside_div2.appendChild(inside_button);
+                inside_div.appendChild(inside_div2);
+                div.appendChild(inside_div);
+                friends_list.appendChild(div);
+            }
+        }
+        k();
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/script.min.js"></script>
+    <script src="static/assets/js/script.min.js"></script>
 </body>
 
 </html>

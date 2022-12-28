@@ -1,29 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>Social3</title>
+    <title>Чат</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.1.3/dist/zephyr/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
-    <link rel="stylesheet" href="assets/css/styles.min.css">
+    <link rel="stylesheet" href="static/assets/css/styles.min.css">
 </head>
 
 <body style="background: var(--bs-gray-100);">
+    <script>
+        function get_cookie(name){
+            let cookie = {};
+            document.cookie.split(';').forEach(function (el){
+                let [k, v] = el.split("=");
+                cookie[k.trim()] = v;
+            });
+            return cookie[name];
+        }
+    </script>
     <div class="modal fade" role="dialog" tabindex="-1" id="modal-1">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Перевод денег</h4><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h4 class="modal-title">Перевод денег</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <form><input class="form-control" type="text" placeholder="Сумма перевода" name="amount" inputmode="numeric" required="" minlength="16" maxlength="16" style="margin-top: 4px;margin-bottom: 4px;"><input class="form-control" type="text" placeholder="Номер карты" name="card_num" inputmode="numeric" required="" minlength="16" maxlength="16" style="margin-top: 4px;margin-bottom: 4px;">
-                        <div class="d-flex"><input class="form-control" type="text" placeholder="Дата в формате XX/XX" name="card_expire" inputmode="numeric" required="" minlength="16" maxlength="16" style="margin: 4px;margin-left: 0px;"><input class="form-control" type="text" placeholder="CVV код" name="card_cvv" inputmode="numeric" required="" minlength="16" maxlength="16" style="margin: 4px;margin-right: 0px;"></div>
-                    </form><small class="form-text text-danger">Срок действия карты истёк</small>
+                    <form>
+                        <input class="form-control" type="text" placeholder="Сумма перевода" name="amount" inputmode="numeric" required="" minlength="16" maxlength="16" style="margin-top: 4px;margin-bottom: 4px;">
+                        <input class="form-control" type="text" placeholder="Номер карты" name="card_num" inputmode="numeric" required="" minlength="16" maxlength="16" style="margin-top: 4px;margin-bottom: 4px;">
+                        <div class="d-flex">
+                            <input class="form-control" type="text" placeholder="Дата в формате XX/XX" name="card_expire" inputmode="numeric" required="" minlength="16" maxlength="16" style="margin: 4px;margin-left: 0px;">
+                            <input class="form-control" type="text" placeholder="CVV код" name="card_cvv" inputmode="numeric" required="" minlength="16" maxlength="16" style="margin: 4px;margin-right: 0px;">
+                        </div>
+                    </form>
+                    <small class="form-text text-danger">Срок действия карты истёк</small>
                 </div>
-                <div class="modal-footer"><button class="btn btn-light" type="button" data-bs-dismiss="modal">Закрыть</button><button class="btn btn-primary" type="button">Перевести</button></div>
+                <div class="modal-footer">
+                    <button class="btn btn-light" type="button" data-bs-dismiss="modal">Закрыть</button>
+                    <button class="btn btn-primary" type="button">Перевести</button>
+                </div>
             </div>
         </div>
     </div>
@@ -31,98 +51,161 @@
         <div class="row">
             <div class="col-12 col-md-4 col-lg-3 offset-xxl-0">
                 <div class="vstack gap-1 shadow-lg" style="background: var(--bs-white);border-radius: 12px;padding: 20px;margin: 6px;">
-                    <div><a class="btn btn-primary" role="button" style="width: 100%;" href="/profile"><i class="fas fa-user"></i>&nbsp;Профиль</a></div>
-                    <div><a class="btn btn-primary text-truncate" role="button" style="width: 100%;" href="/chat"><i class="fas fa-comment"></i>&nbsp;Сообщения&nbsp;<span class="badge rounded-pill bg-primary">2</span></a></div>
-                    <div><a class="btn btn-primary" role="button" style="width: 100%;" href="/people"> <i class="fas fa-users"></i>&nbsp;Люди</a></div>
-                    <div><a class="btn btn-primary" role="button" style="width: 100%;" href="/friends"> <i class="fas fa-smile"></i>&nbsp;Друзья</a></div>
-                    <div><a class="btn btn-danger" role="button" style="width: 100%;" href="/exit">Выйти</a></div>
+                    <div>
+                        <a class="btn btn-primary" role="button" style="width: 100%;" href="/me">
+                            <i class="fas fa-user"></i>&nbsp;Профиль
+                        </a>
+                    </div>
+                    <div>
+                        <a class="btn btn-primary text-truncate" role="button" style="width: 100%;" href="/chat">
+                            <i class="fas fa-comment"></i>&nbsp;Сообщения&nbsp;<span id="msg_count" class="badge rounded-pill bg-primary d-none">0</span>
+                        </a>
+                    </div>
+                    <div>
+                        <a class="btn btn-primary" role="button" style="width: 100%;" href="/people"> <i class="fas fa-users"></i>&nbsp;Люди</a>
+                    </div>
+                    <div>
+                        <a class="btn btn-primary" role="button" style="width: 100%;" href="/friends"> <i class="fas fa-smile"></i>&nbsp;Друзья</a>
+                    </div>
+                    <div>
+                        <a class="btn btn-danger" role="button" style="width: 100%;" href="/exit">Выйти</a>
+                    </div>
                 </div>
             </div>
             <div class="col-12 col-md-8 col-lg-5 col-xl-3 offset-lg-1 offset-xl-0">
                 <div class="shadow-lg" style="border-radius: 12px;padding: 20px;background: var(--bs-white);margin: 6px;">
                     <h3 class="text-truncate" style="text-align: center;">Недавние</h3>
-                    <form method="get"><input class="form-control" type="text" style="margin-bottom: 8px;" placeholder="Найдите контакт" name="find_contact"></form>
-                    <p style="width: 100%;margin-bottom: 0px;">Недавних сообщений нет</p>
-                    <div class="vstack gap-1">
-                        <div class="d-flex align-items-center" style="max-width: 100%;"><img class="rounded-circle" src="assets/img/image.jpg" style="width: 20%;max-width: 20%;">
-                            <div class="d-flex flex-column" style="max-width: 80%;width: 80%;padding: 6px;"><a class="text-truncate" href="#" style="margin-bottom: -3px;"><span class="badge bg-primary">3</span><span style="color: rgb(73, 80, 87);">Абоба Абобовивввввввввввчвыапывапыddddddddddddddddddddddddddвина</span><br></a>
-                                <p class="text-truncate" style="margin-bottom: 4px;font-size: 13px;color: var(--bs-blue);">@deep_aboba</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center" style="max-width: 100%;"><img class="rounded-circle" src="assets/img/image.jpg" style="width: 20%;max-width: 20%;">
-                            <div class="d-flex flex-column" style="max-width: 80%;width: 80%;padding: 6px;"><a class="text-truncate" href="#" style="margin-bottom: -3px;"><span style="color: rgb(73, 80, 87);">Абоба Абобовивввввввввввчвыапывапыddddddddddddddddddddddddddвина</span><br></a>
-                                <p class="text-truncate" style="margin-bottom: 4px;font-size: 13px;color: var(--bs-blue);">@deep_aboba</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center" style="max-width: 100%;"><img class="rounded-circle" src="assets/img/image.jpg" style="width: 20%;max-width: 20%;">
-                            <div class="d-flex flex-column" style="max-width: 80%;width: 80%;padding: 6px;"><a class="text-truncate" href="#" style="margin-bottom: -3px;"><span style="color: rgb(73, 80, 87);">Абоба Абобовивввввввввввчвыапывапыddddddddddddddddddddddddddвина</span><br></a>
-                                <p class="text-truncate" style="margin-bottom: 4px;font-size: 13px;color: var(--bs-blue);">@deep_aboba</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center" style="max-width: 100%;"><img class="rounded-circle" src="assets/img/image.jpg" style="width: 20%;max-width: 20%;">
-                            <div class="d-flex flex-column" style="max-width: 80%;width: 80%;padding: 6px;"><a class="text-truncate" href="#" style="margin-bottom: -3px;"><span style="color: rgb(73, 80, 87);">Абоба Абобовивввввввввввчвыапывапыddddddddddddddddddddddddddвина</span><br></a>
-                                <p class="text-truncate" style="margin-bottom: 4px;font-size: 13px;color: var(--bs-blue);">@deep_aboba</p>
-                            </div>
-                        </div>
+                    <form id="find_form" method="get">
+                        <input id="find_contact" class="form-control" type="text" style="margin-bottom: 8px;" placeholder="Найдите контакт" name="find_contact">
+                    </form>
+                    <script>
+                        document.querySelector("#find_form").onsubmit = async function (e){
+                            e.preventDefault();
+                            let req_ = await fetch("/chat/"+document.querySelector("#find_contact").value, {method: 'GET', credentials: 'include' });
+                            if (req_.redirected) {window.location.href = req_.url;}
+                        }
+                    </script>
+                    <p id="recent_msgs_p" class="d-none" style="width: 100%;margin-bottom: 0px;">Недавних сообщений нет</p>
+                    <div class="vstack gap-1" id="users_chat">
+
                     </div>
                 </div>
             </div>
             <div class="col-xl-6">
                 <div class="shadow-lg" style="border-radius: 12px;padding: 20px;background: var(--bs-white);margin: 6px;">
                     <h3 class="text-truncate" style="text-align: center;">Чат</h3>
-                    <p style="text-align: center;">Выберите или найдите контакт в окне слева</p>
-                    <form class="d-flex" method="get"><input class="form-control" type="text" placeholder="Поиск сообщения" name="find_msg"><a class="btn btn-primary text-nowrap" role="button" style="margin-left: 4px;" href="export_userid">Экспорт чата</a><button class="btn btn-primary text-nowrap" type="button" style="margin-left: 4px;" data-bs-target="#modal-1" data-bs-toggle="modal">Перевести деньги</button></form>
-                    <div class="vstack gap-1" id="stack_scroll" style="overflow-y: scroll;min-height: 50vh;max-height: 70vh;margin-top: 4px;margin-bottom: 4px;">
-                        <div class="d-flex" style="padding: 4px;background: var(--bs-body-bg);">
-                            <div style="width: 10%;max-width: 10%;"><img class="rounded-circle img-fluid" src="assets/img/image.jpg"></div>
-                            <div style="margin-left: 4px;width: 90%;max-width: 90%;">
-                                <p style="margin-bottom: 0px;"><a href="friend_profile">Абоба</a></p>
-                                <p class="text-break" style="margin-bottom: 0px;">Привет, как дела?<button class="btn btn-secondary btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;"><i class="fas fa-share"></i></button><button class="btn btn-primary btn-sm disabled border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;" disabled=""><i class="fas fa-ban"></i></button></p>
-                                <p class="text-truncate text-break" style="margin-bottom: 0px;font-size: 12px;">Вы поставили реакцию&nbsp;<strong>🤡</strong></p>
-                            </div>
+                    <p id="some_text" class="d-none" style="text-align: center;">Выберите или найдите контакт в окне слева</p>
+                    <div id="other_" class="d-none">
+                        <a id="export_button" class="btn btn-primary text-nowrap" role="button" style="margin-left: 4px;" href="/export_">Экспорт чата</a>
+                        <div class="vstack gap-1" id="stack_scroll" style="overflow-y: scroll;height: 70vh;min-height: 50vh;max-height: 70vh;margin-top: 4px;margin-bottom: 4px;">
+
                         </div>
-                        <div class="d-flex" style="padding: 4px;background: var(--bs-body-bg);">
-                            <div style="width: 10%;max-width: 10%;"><img class="rounded-circle img-fluid" src="assets/img/image.jpg"></div>
-                            <div style="margin-left: 4px;width: 90%;max-width: 90%;">
-                                <p style="margin-bottom: 0px;">Вы</p>
-                                <p class="text-break" style="margin-bottom: 0px;">Всё отлично!<button class="btn btn-secondary btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;"><i class="fas fa-share"></i></button><button class="btn btn-primary btn-sm disabled border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;" disabled=""><i class="fas fa-pen"></i></button><button class="btn btn-danger btn-sm disabled border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;" disabled=""><i class="fas fa-trash"></i></button></p>
-                                <p class="text-truncate text-break" style="margin-bottom: 0px;font-size: 12px;">Абоба поставил реакцию&nbsp;<strong>👍</strong><br></p>
-                            </div>
-                        </div>
-                        <div class="d-flex" style="padding: 4px;background: var(--bs-body-bg);">
-                            <div style="width: 10%;max-width: 10%;"><img class="rounded-circle img-fluid" src="assets/img/image.jpg"></div>
-                            <div style="margin-left: 4px;width: 90%;max-width: 90%;">
-                                <p style="margin-bottom: 0px;"><a href="friend_profile">Абоба</a></p>
-                                <p class="text-truncate text-break" style="margin-bottom: 0px;font-size: 12px;">В ответ на <a href="#message">сообщение</a> "Привет, как дела? ваоыадыаводыываываыаывп"</p>
-                                <p class="text-break" style="margin-bottom: 0px;">ЫВОРаДВАрыдврыдврДАЫОРАДЫравдосртдыоврдЫВОРАЫВрмдыМРТ<button class="btn btn-secondary btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;"><i class="fas fa-share"></i></button><span class="badge rounded-pill bg-light" style="padding: 0;"><button class="btn btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;padding: 0px;font-size: 20px;"><strong>👍</strong></button><button class="btn btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;padding: 0px;font-size: 20px;"><strong>👎</strong></button><button class="btn btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;padding: 0px;font-size: 20px;"><strong>🤔</strong></button><button class="btn btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;padding: 0px;font-size: 20px;"><strong>😥</strong></button><button class="btn btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;padding: 0px;font-size: 20px;"><strong>🤡</strong></button></span></p>
-                            </div>
-                        </div>
-                        <div class="d-flex" style="padding: 4px;background: var(--bs-body-bg);">
-                            <div style="width: 10%;max-width: 10%;"><img class="rounded-circle img-fluid" src="assets/img/image.jpg"></div>
-                            <div style="margin-left: 4px;width: 90%;max-width: 90%;">
-                                <p style="margin-bottom: 0px;"><a href="friend_profile">Абоба</a></p>
-                                <p class="text-break" style="margin-bottom: 0px;">ЫВОРаДВАрыдврыдврДАЫОРАДЫравдосртдыоврдЫВОРАЫВрмдыМРТ<button class="btn btn-secondary btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;"><i class="fas fa-share"></i></button><span class="badge rounded-pill bg-light" style="padding: 0;"><button class="btn btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;padding: 0px;font-size: 20px;"><strong>👍</strong></button><button class="btn btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;padding: 0px;font-size: 20px;"><strong>👎</strong></button><button class="btn btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;padding: 0px;font-size: 20px;"><strong>🤔</strong></button><button class="btn btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;padding: 0px;font-size: 20px;"><strong>😥</strong></button><button class="btn btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;padding: 0px;font-size: 20px;"><strong>🤡</strong></button></span></p>
-                            </div>
-                        </div><small class="form-text text-center">@deep_aboba перевёл 10 рублей @you</small>
-                        <div class="d-flex" style="padding: 4px;background: var(--bs-body-bg);">
-                            <div style="width: 10%;max-width: 10%;"><img class="rounded-circle img-fluid" src="assets/img/image.jpg"></div>
-                            <div style="margin-left: 4px;width: 90%;max-width: 90%;">
-                                <p style="margin-bottom: 0px;"><a href="friend_profile">Абоба</a></p>
-                                <p class="text-break" style="margin-bottom: 0px;">ЫВОРаДВАрыдврыдврДАЫОРАДЫравдосртдыоврдЫВОРАЫВрмдыМРТ<button class="btn btn-secondary btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;"><i class="fas fa-share"></i></button><span class="badge rounded-pill bg-light" style="padding: 0;"><button class="btn btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;padding: 0px;font-size: 20px;"><strong>👍</strong></button><button class="btn btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;padding: 0px;font-size: 20px;"><strong>👎</strong></button><button class="btn btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;padding: 0px;font-size: 20px;"><strong>🤔</strong></button><button class="btn btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;padding: 0px;font-size: 20px;"><strong>😥</strong></button><button class="btn btn-sm border rounded-circle border-0" type="button" style="opacity: 0.80;margin-left: 4px;padding: 0px;font-size: 20px;"><strong>🤡</strong></button></span></p>
-                            </div>
-                        </div>
+                        <form id="send_msg_form" class="d-flex" method="post">
+                            <input id="msg_input" class="form-control" type="text" placeholder="Введите сообщение" name="message">
+                            <button class="btn btn-primary" type="submit" style="margin-left: 4px;"><i class="fas fa-paper-plane"></i></button>
+                        </form>
                     </div>
-                    <form class="d-flex" method="post"><input class="form-control" type="text" placeholder="Введите сообщение" name="message"><button class="btn btn-primary" type="submit" style="margin-left: 4px;"><i class="fas fa-paper-plane"></i></button></form>
-                    <p class="text-truncate" style="margin-bottom: 0px;"><button class="btn-close" data-bs-toggle="tooltip" data-bss-tooltip="" data-bs-placement="bottom" style="font-size: 10px;" title="Открепить"></button>&nbsp;<span style="color: rgb(108, 117, 125);">Ответ на сообщение&nbsp;</span><span style="text-decoration: underline; color: rgb(108, 117, 125);">@deep_aboba</span><span style="color: rgb(108, 117, 125);">&nbsp;"Привет dsadfsasssssssssssssssssssssss dsadfsadfsadfadfgdgdgdsdfasdfasdfasf"</span><br></p><script>
-    var scrollable = document.getElementById("stack_scroll");
-    scrollable.scrollTop = scrollable.scrollHeight;
-</script>
                 </div>
             </div>
         </div>
     </div>
+    <script>
+        async function j(){
+            // Информация о клиенте
+            let req_ = await fetch("/my_info", {method: 'GET', credentials: 'include' });
+            if (req_.redirected) {window.location.href = req_.url;}
+            let response_ = await req_.json();
+            if (response_["unread_msgs"] === 0) {document.querySelector("#msg_count").classList.add("d-none");}
+            else {document.querySelector("#msg_count").classList.remove("d-none");document.querySelector("#msg_count").innerHTML = response_["unread_msgs"];}
+            ////////////////////////////
+            // Отображение недавних диалогов слева
+            let users_chat = document.querySelector("#users_chat");
+            if (response_["recent_chats"].length === 0){
+                // Недавних чатов нет
+                document.querySelector("#recent_msgs_p").classList.remove("d-none");
+            }
+            else {
+                // Добавляем недавние чаты
+                response_["recent_chats"].forEach(chat_id => async function(chat_id){
+                    let req_ = await fetch(`/info${chat_id}`, {method: 'GET', credentials: 'include' });
+                    let response_ = await req_.json();
+                    let recent_chat = document.createElement("div");
+                    recent_chat.innerHTML = `
+                        <div class="d-flex align-items-center" style="max-width: 100%;">
+                            <img class="rounded-circle" src="${response_["picture"]}" style="width: 20%;max-width: 20%;">
+                            <div class="d-flex flex-column" style="max-width: 80%;width: 80%;padding: 6px;">
+                                <a class="text-truncate" href="/chat${chat_id}" style="margin-bottom: -3px;">
+                                    <span class="badge bg-primary">3</span>
+                                    <span style="color: rgb(73, 80, 87);">${response_["name"]} ${response_["surname"]}</span><br>
+                                </a>
+                                <p class="text-truncate" style="margin-bottom: 4px;font-size: 13px;color: var(--bs-blue);">@${response_["login"]}</p>
+                            </div>
+                        </div>
+                    `
+                    users_chat.appendChild(recent_chat);
+                });
+            }
+        }
+        j();
+    </script>
+    <script>
+        ////////////////////////////
+        // Рисуем чат
+        let scrollable = document.getElementById("stack_scroll");
+        let chat_user_id = get_cookie("chat_user_id");
+        async function k() {
+            console.log("tick");
+            scrollable.innerHTML = '';
+            document.querySelector("#export_button").href = `/export_chat${chat_user_id}`;
+            // Загружаем выбранный чат
+            document.querySelector("#other_").classList.remove("d-none");
+            let req_ = await fetch(`/chat_msg/${chat_user_id}`, {method: 'GET', credentials: 'include' });
+            let response_ = await req_.json();
+            let msgs = response_["msgs"];
+            for(let i = 0; i < msgs.length; i++){
+                req_ = await fetch(`/msg_info/${msgs[i]}`, {method: 'GET', credentials: 'include' });
+                response_ = await req_.json();
+                let req2_ = await fetch(`/info${response_["senderId"]}`, {method: 'GET', credentials: 'include' });
+                let response2_ = await req2_.json();
+                let dta = document.createElement("div");
+                dta.innerHTML = `
+                    <div class="d-flex" style="padding: 4px;background: var(--bs-body-bg);">
+                        <div style="width: 10%;max-width: 10%;">
+                        <img class="rounded-circle img-fluid" src="${response2_["picture"]}"></div>
+                            <div style="margin-left: 4px;width: 90%;max-width: 90%;">
+                                <p style="margin-bottom: 0px;">${response2_["name"]}</p>
+                                <p class="text-break" style="margin-bottom: 0px;">${response_["msg"]}</p>
+                            </div>
+                    </div>
+                    `;
+                scrollable.appendChild(dta);
+            }
+            scrollable.scrollTop = scrollable.scrollHeight;
+        }
+        if(get_cookie("chat_user_id") === "-1"){
+            // Если конкретный чат не выбран
+            console.log("chat user id -1");
+            document.querySelector("#some_text").classList.remove("d-none");
+        }
+        else {
+            let timerId = setInterval(() => k(), 2000);
+        }
+        async function send_msg(e){
+            console.log("send");
+            e.preventDefault();
+            let req_ = await fetch(`/chat_msg/${get_cookie("chat_user_id")}`, {method: 'POST', credentials: 'include', body: JSON.stringify(
+                    {
+                        "type": "send",
+                        "msg_text": document.querySelector("#msg_input").value,
+                        "reply": -1,
+                    }
+                ) });
+            if (req_.redirected) {window.location.href = req_.url;}
+        }
+        document.querySelector("#send_msg_form").onsubmit = send_msg;
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/script.min.js"></script>
+    <script src="static/assets/js/script.min.js"></script>
 </body>
 
 </html>

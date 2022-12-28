@@ -93,6 +93,7 @@
                 modal.hide();
                 error_msg.classList.remove("d-none");
                 error_msg.innerHTML = "Пользователя с такими данными не существует";
+                document.querySelector("#tfa_value").value = "";
             }
             else if (response.hasOwnProperty("error") && response["error"] === "tfa_incorrect"){
                 modal.hide();
